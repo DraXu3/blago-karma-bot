@@ -1,5 +1,5 @@
 *.json
-*.txt
+responses.txt
 
 .env
 __pycache__
