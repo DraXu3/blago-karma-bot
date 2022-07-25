@@ -179,10 +179,10 @@ class BotManager:
             reply_text = f"{emoji_text} Юзер {self._get_user_markup(session['voted_user'])} получает *{amount_text} OK* по причине: _\"{session['vote_reason']}\"_"
             await session["command_message"].reply_text(text=reply_text, parse_mode=ParseMode.MARKDOWN)
             
-            # if session["vote_type"] == 'up':
-            #     self.vote_manager.up(session["voted_user"].id, session["vote_reason"])
-            # else:
-            #     self.vote_manager.down(session["voted_user"].id, session["vote_reason"])
+            if session["vote_type"] == 'up':
+                self.vote_manager.up(session["voted_user"].id, session["vote_reason"])
+            else:
+                self.vote_manager.down(session["voted_user"].id, session["vote_reason"])
         else:
             reply_text="\uE333 _Реквест был отклонен_"
             await session["command_message"].reply_text(text=reply_text, parse_mode=ParseMode.MARKDOWN)

@@ -1,5 +1,4 @@
 import gspread
-import logging
 
 class GoogleSpreadsheetManager:
     def __init__(
@@ -9,11 +8,6 @@ class GoogleSpreadsheetManager:
         spreadsheet_user_columns,
         spreadsheet_first_data_row
     ):
-        logging.info(f"account_dict={account_dict}")
-        logging.info(f"spreadsheet_id={spreadsheet_id}")
-        logging.info(f"spreadsheet_user_columns={spreadsheet_user_columns}")
-        logging.info(f"spreadsheet_first_data_row={spreadsheet_first_data_row}")
-
         self.client = gspread.service_account_from_dict(account_dict)
         self.worksheet = self.client.open_by_key(spreadsheet_id).get_worksheet(0)
         self.spreadsheet_user_columns = spreadsheet_user_columns
