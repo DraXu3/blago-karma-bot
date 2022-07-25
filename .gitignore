@@ -2,4 +2,5 @@
 responses.txt
 
 .env
+env
 __pycache__

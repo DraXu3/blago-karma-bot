@@ -1,4 +1,4 @@
-from functools import wraps
+# from functools import wraps
 from telegram import Update, MessageEntity, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import filters, ApplicationBuilder, ContextTypes
 from telegram.ext import CommandHandler, MessageHandler, CallbackQueryHandler
