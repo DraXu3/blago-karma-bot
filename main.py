@@ -1,6 +1,6 @@
 import logging
 
-from config import TELEGRAM_BOT_TOKEN, GOOGLE_API_ACCESS_FILE, GOOGLE_SPREADSHEET_ID, SESSION_TTL
+from config import TELEGRAM_BOT_TOKEN, GOOGLE_API_ACCOUNT, GOOGLE_SPREADSHEET_ID, SESSION_TTL
 from config import GOOGLE_SPREADSHEET_USER_COLUMNS, GOOGLE_SPREADSHEET_FIRST_DATA_ROW
 from google_spreadsheet_manager import GoogleSpreadsheetManager
 from vote_manager import VoteManager
@@ -14,7 +14,7 @@ logging.basicConfig(
 
 if __name__ == '__main__':
     google_spreadsheet_manager = GoogleSpreadsheetManager(
-        access_file=GOOGLE_API_ACCESS_FILE,
+        account_dict=GOOGLE_API_ACCOUNT,
         spreadsheet_id=GOOGLE_SPREADSHEET_ID,
         spreadsheet_user_columns=GOOGLE_SPREADSHEET_USER_COLUMNS,
         spreadsheet_first_data_row=GOOGLE_SPREADSHEET_FIRST_DATA_ROW

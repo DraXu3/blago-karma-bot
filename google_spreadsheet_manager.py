@@ -1,16 +1,14 @@
 import gspread
 
-from config import GOOGLE_SPREADSHEET_ACCOUNT
-
 class GoogleSpreadsheetManager:
     def __init__(
         self, 
-        access_file, 
+        account_dict, 
         spreadsheet_id,
         spreadsheet_user_columns,
         spreadsheet_first_data_row
     ):
-        self.client = gspread.service_account_from_dict(GOOGLE_SPREADSHEET_ACCOUNT)
+        self.client = gspread.service_account_from_dict(account_dict)
         self.worksheet = self.client.open_by_key(spreadsheet_id).get_worksheet(0)
         self.spreadsheet_user_columns = spreadsheet_user_columns
         self.spreadsheet_first_data_row = spreadsheet_first_data_row
