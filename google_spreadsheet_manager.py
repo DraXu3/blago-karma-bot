@@ -1,4 +1,5 @@
 import gspread
+import logging
 
 class GoogleSpreadsheetManager:
     def __init__(
