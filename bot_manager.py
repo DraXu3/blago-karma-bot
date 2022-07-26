@@ -82,7 +82,7 @@ class BotManager:
             requesting_user = update.message['from']
 
             ok_amount = '+1' if vote_type == 'up' else '-1'
-            reply_text = f"\U0001F4AC Участник {self._get_user_markup(requesting_user)} реквестает *{ok_amount} ОК* участнику {self._get_user_markup(mentioned_user)} по причине: _\"{reason}\"_"
+            reply_text = f"\U0001F4AC Участник {self._get_user_markup(requesting_user)} запрашивает *{ok_amount} ОК* участнику {self._get_user_markup(mentioned_user)} по причине: _\"{reason}\"_"
             message = await update.message.reply_text(text=reply_text, reply_markup=self.confirm_reply_markup, parse_mode=ParseMode.MARKDOWN)
 
             async def _on_expired_callback():
@@ -106,10 +106,10 @@ class BotManager:
     async def help(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_text="\U0001F921 Я *Карма Бот*, я манипулирую кармой\n\n" \
             + "Поддерживаются следующие команды:\n\n" \
-            + "  - `/help`: вывести эту справку\n\n" \
-            + "  - `/up @user_mention <reason>`: запрос на *+1 ОК* пользователю `\"@user_mention\"` по причине `\"<reason>\"`\n\n" \
-            + "  - `/down @user_mention <reason>`: запрос на *-1 ОК* пользователю `\"@user_mention\"` по причине `\"<reason>\"`\n\n" \
-            + "  - `/show [@user_mention]`: вывести количество ОК пользователя `\"@user_mention\"` (или для всех пользователей, если параметр не задан)"
+            + "  - `/help`: вывести список поддерживаемых команд\n\n" \
+            + "  - `/up <user_mention> [reason]`: запросить *+1 ОК* участнику `\"@user_mention\"` по причине `\"reason\"` (опционально)\n\n" \
+            + "  - `/down <user_mention> [reason]`: запросить *-1 ОК* участнику `\"@user_mention\"` по причине `\"reason\"` (опционально)\n\n" \
+            + "  - `/show [user_mention]`: показать количество *ОК* участника `\"@user_mention\"` (или всех участников, если параметр не задан)"
 
         await update.message.reply_text(text=reply_text, parse_mode=ParseMode.MARKDOWN)
         
@@ -126,7 +126,7 @@ class BotManager:
                 total = self.vote_manager.get_total_value(mentioned_user.id)
             except Exception as err:
                 logging.error(err)
-                reply_text=f"\uE252 _Упомянутого участника нет в базе данных_"
+                reply_text=f"\uE252 _Упомянутый участник не зарегистрирован_"
                 await update.message.reply_text(text=reply_text, parse_mode=ParseMode.MARKDOWN)
             else:
                 reply_text=f"\U0001F50E Участник {self._get_user_markup(mentioned_user)} имеет *{total} OK*"
@@ -168,6 +168,11 @@ class BotManager:
             await update.callback_query.message.reply_text(text=reply_text, parse_mode=ParseMode.MARKDOWN)
             return
 
+        if session["voted_user"].id == update.callback_query['from'].id and choice == 'yes':
+            reply_text=f"\uE252 _Запрос не может быть разрешен кандидатом_"
+            await update.callback_query.message.reply_text(text=reply_text, parse_mode=ParseMode.MARKDOWN)
+            return
+
         if session["voted_user"].id == update.callback_query['from'].id and choice == 'no':
             reply_text=f"\uE252 _Запрос не может быть отклонен кандидатом_"
             await update.callback_query.message.reply_text(text=reply_text, parse_mode=ParseMode.MARKDOWN)
@@ -176,7 +181,7 @@ class BotManager:
         if choice == 'yes':
             amount_text = '+1' if session["vote_type"] == 'up' else '-1'
             emoji_text = '\uE232' if session["vote_type"] == 'up' else '\uE233'
-            reply_text = f"{emoji_text} Юзер {self._get_user_markup(session['voted_user'])} получает *{amount_text} OK* по причине: _\"{session['vote_reason']}\"_"
+            reply_text = f"{emoji_text} Участник {self._get_user_markup(session['voted_user'])} получает *{amount_text} OK* по причине: _\"{session['vote_reason']}\"_"
             await session["command_message"].reply_text(text=reply_text, parse_mode=ParseMode.MARKDOWN)
             
             if session["vote_type"] == 'up':
@@ -184,7 +189,7 @@ class BotManager:
             else:
                 self.vote_manager.down(session["voted_user"].id, session["vote_reason"])
         else:
-            reply_text="\uE333 _Реквест был отклонен_"
+            reply_text="\uE333 _Звпрос был отклонен_"
             await session["command_message"].reply_text(text=reply_text, parse_mode=ParseMode.MARKDOWN)
 
         await update.callback_query.message.delete()
