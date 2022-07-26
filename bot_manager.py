@@ -71,6 +71,8 @@ class BotManager:
      # @command_handler('up')
     def _create_vote_command(self, vote_type):
         async def vote_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+            logging.info(f"[vote_command] update.message = {update.message}")
+
             mention_entity = None if len(update.message.entities) < 2 else update.message.entities[1]
             if not mention_entity or mention_entity.type != MessageEntity.TEXT_MENTION:
                 await update.message.reply_text(text="\uE252 _Команда не содержит упоминания участника_", parse_mode=ParseMode.MARKDOWN)
@@ -102,6 +104,14 @@ class BotManager:
                 
         return vote_command
 
+    async def _get_user_data(self, update: Update, user_id):
+        try:
+            user_data = await update.message.chat.get_member(user_id)
+            return user_data
+        except Exception as err:
+            logging.error(f"[_get_user_data] error = {err}")
+            return None
+
     # @command_handler('help')
     async def help(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_text="\U0001F921 Я *Карма Бот*, я манипулирую кармой\n\n" \
@@ -115,6 +125,8 @@ class BotManager:
         
     # @command_handler('show')
     async def show(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        logging.info(f"[show] update.message = {update.message}")
+
         mention_entity = None if len(update.message.entities) < 2 else update.message.entities[1]
         mentioned_user = None
         if mention_entity and mention_entity.type == MessageEntity.TEXT_MENTION:
@@ -137,12 +149,16 @@ class BotManager:
             total = self.vote_manager.get_total_values()
             total = sorted(list(total.items()), key=lambda item: item[1], reverse=True)
 
-            users = await asyncio.gather(*[update.message.chat.get_member(record[0]) for record in total])
+            users = await asyncio.gather(*[self._get_user_data(update, record[0]) for record in total])
+
+            logging.info(f"[show] users data = {users}")
 
             reply_text = "\uE131 Текущий рейтинг участников:\n\n"
             for (index, record) in enumerate(total):
-                amount, user = record[1], users[index]["user"]
-                reply_text += f"  {index + 1}. {self._get_user_markup(user)}: *{amount} OK*\n"                
+                [user, amount] = record
+                if users[index]:
+                    user = self._get_user_markup(users[index]["user"])
+                reply_text += f"  {index + 1}. {user}: *{amount} OK*\n"                
             await update.message.reply_text(text=reply_text, parse_mode=ParseMode.MARKDOWN)
 
     # @command_handler(filters.COMMAND, MessageHandler)
