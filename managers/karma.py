@@ -1,11 +1,11 @@
-class VoteManager:
+class KarmaManager:
     def __init__(self, google_spreadsheet_manager):
         self.google_spreadsheet_manager = google_spreadsheet_manager
 
     def _add_value(self, user_id, amount, reason):
         user_columns = self.google_spreadsheet_manager.get_user_columns(user_id)
         row_to_add_data_into = self.google_spreadsheet_manager.get_first_non_empty_row(user_columns[1])
-        self.google_spreadsheet_manager.add_row_data(row_to_add_data_into, column, [reason, amount])
+        self.google_spreadsheet_manager.add_row_data(row_to_add_data_into, user_columns, [reason, amount])
 
     def up(self, user_id, reason):
         self._add_value(user_id, 1, reason)

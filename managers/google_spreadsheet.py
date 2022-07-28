@@ -14,9 +14,10 @@ class GoogleSpreadsheetManager:
         self.spreadsheet_first_data_row = spreadsheet_first_data_row
 
     def get_user_columns(self, user_id):
+        user_id = str(user_id)
         columns = self.spreadsheet_user_columns[user_id]
         if columns is None:
-            raise Exception("Invalid user provided")
+            raise Exception(f"Invalid user provided (user_id={user_id})")
         return columns
 
     def get_mapped_users(self):
@@ -31,5 +32,5 @@ class GoogleSpreadsheetManager:
     
     def add_row_data(self, row, column_range, data):
         [column_from, column_to] = column_range
-        data_range = f"{column[0]}{row}:{column[1]}{row}"
+        data_range = f"{column_from}{row}:{column_to}{row}"
         self.worksheet.update(data_range, [data])
