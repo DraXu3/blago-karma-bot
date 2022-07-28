@@ -373,14 +373,27 @@ class BotManager:
             reply_text=f"\uE252 _Запрос не может быть отклонен кандидатом_"
             await confirm_request_message.reply_text(text=reply_text, parse_mode=ParseMode.MARKDOWN)
             return
+
+        self.session_manager.delete_session(confirm_request_session["id"])
+        await confirm_request_message.delete()
+
+        logger.info(f"Session was deleted (session_id={confirm_request_session['id']}, session_type=SessionType.CONFIRM_REQUEST)")
+        logger.info(f"Confirm request message was deleted: {confirm_request_message}")
         
         if confirmed_option == ConfirmOptions.CONFIRM:
             logger.info(f"Received option from user (user_id={confirming_user.id}, confirm_option=ConfirmOptions.CONFIRM): {confirm_request_message}")
 
-            if request_type == RequestType.UP:
-                self.karma_manager.up(selected_user_id, reason)
-            else:
-                self.karma_manager.down(selected_user_id, reason)
+            try:
+                if request_type == RequestType.UP:
+                    self.karma_manager.up(selected_user_id, reason)
+                else:
+                    self.karma_manager.down(selected_user_id, reason)
+            except Exception as err:
+                logger.error(f"Error updating karma for user (user_id={selected_user_id}, reason={reason}): {err}")
+
+                reply_text = f"\uE252 _Команда не может быть выполнена_"
+                await request_message.reply_text(text=reply_text, parse_mode=ParseMode.MARKDOWN)
+                return
 
             ok_amount_text = '+1' if request_type == RequestType.UP else '-1'
             emoji_text = '\uE232' if request_type == RequestType.UP else '\uE233'
@@ -396,12 +409,6 @@ class BotManager:
 
             reply_text="\uE333 _Запрос был отклонен_"
             await request_message.reply_text(text=reply_text, parse_mode=ParseMode.MARKDOWN)
-
-        self.session_manager.delete_session(confirm_request_session["id"])
-        await confirm_request_message.delete()
-
-        logger.info(f"Session was deleted (session_id={confirm_request_session['id']}, session_type=SessionType.CONFIRM_REQUEST)")
-        logger.info(f"Confirm request message was deleted: {confirm_request_message}")
 
     def run(self):
         self.application.run_polling()
