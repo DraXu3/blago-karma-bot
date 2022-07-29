@@ -296,7 +296,7 @@ class BotManager:
         logger.info(f"Found active session (session_id={select_user_session['id']}, session_type=SessionType.SELECT_USER)")
 
         selecting_user = update.callback_query["from"]
-        selected_user_id = update.callback_query.data
+        selected_user_id = int(update.callback_query.data)
 
         if requesting_user.id != selecting_user.id:
             logger.error("Error selecting a user: only requesting user is able to do that (requesting_user_id={equesting_user.id}, selecting_user_id={selecting_user.id})")
