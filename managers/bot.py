@@ -18,14 +18,42 @@ class RequestType(str, Enum):
     DOWN = 'DOWN'
 
 
+def restrict_public_access(inherited_self=None):
+    def _restrict_public_access(command):
+        async def _restricted_command(*args):
+            logger.info(args)
+
+            if inherited_self:
+                [self, update] = [inherited_self, args[0]]
+            else:
+                [self, update, _] = args
+
+            message = update.message if not update.callback_query else update.callback_query.message
+            from_chat_id = message.chat.id
+            from_user = message["from"]
+
+            if from_chat_id != self.chat_id:
+                logger.error(f"Received update from prohibited chat (chat_id={message.chat.id}, user={from_user})")
+
+                reply_text = f"\uE252 _Бот не может быть использован в этом чате_"
+                await message.reply_text(text=reply_text, parse_mode=ParseMode.MARKDOWN)
+                return
+
+            await command(*args)
+
+        return _restricted_command
+    return _restrict_public_access
+
+
 logger = logging.getLogger(__name__)
 
 class BotManager:
-    def __init__(self, token, karma_manager, session_manager, users_manager):
+    def __init__(self, token, karma_manager, session_manager, users_manager, chat_id):
         self.application = ApplicationBuilder().token(token).build()
         self.karma_manager = karma_manager
         self.session_manager = session_manager
         self.users_manager = users_manager
+        self.chat_id = chat_id
 
         self.confirm_request_reply_markup = self._build_reply_markup({
             ConfirmOptions.CONFIRM: 'Разрешить',
@@ -107,6 +135,7 @@ class BotManager:
         await session["data"]["request_message"].reply_text(text=f"\uE252 _Запрос более не актуален_", parse_mode=ParseMode.MARKDOWN)
 
     def _create_request_command(self, request_type):
+        @restrict_public_access(self)
         async def request_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             logger.info(f"Update received: {update}")
 
@@ -159,6 +188,7 @@ class BotManager:
                 
         return request_command
 
+    @restrict_public_access()
     async def help(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_text="\U0001F921 Я *Карма Бот*, я манипулирую кармой\n\n" \
             + "Поддерживаются следующие команды:\n\n" \
@@ -169,6 +199,7 @@ class BotManager:
 
         await update.message.reply_text(text=reply_text, parse_mode=ParseMode.MARKDOWN)
         
+    @restrict_public_access()
     async def show(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         logger.info(f"Update received: {update}")
 
@@ -222,10 +253,12 @@ class BotManager:
                 reply_text += f"  {index + 1}. {user}: *{amount} OK*\n"           
             await update.message.reply_text(text=reply_text, parse_mode=ParseMode.MARKDOWN)
 
+    @restrict_public_access()
     async def unknown(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_text="\uE252 _Неизвестная команда, наберите /help для помощи_"
         await update.message.reply_text(text=reply_text, parse_mode=ParseMode.MARKDOWN)
 
+    @restrict_public_access()
     async def select_user(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         logger.info(f"Update received: {update}")
 
@@ -313,6 +346,7 @@ class BotManager:
             reply_text = f"\uE252 _Команда не может быть выполнена_"
             await request_message.reply_text(text=reply_text, parse_mode=ParseMode.MARKDOWN)
 
+    @restrict_public_access()
     async def confirm_request(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         logger.info(f"Update received: {update}")
 

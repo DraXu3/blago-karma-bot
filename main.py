@@ -1,6 +1,6 @@
 import logging
 
-from config import TELEGRAM_BOT_TOKEN, TELEGRAM_USERS, GOOGLE_API_ACCOUNT, GOOGLE_SPREADSHEET_ID, SELECT_USER_SESSION_TTL
+from config import TELEGRAM_BOT_TOKEN, TELEGRAM_USERS, TELEGRAM_CHAT_ID, GOOGLE_API_ACCOUNT, GOOGLE_SPREADSHEET_ID, SELECT_USER_SESSION_TTL
 from config import CONFIRM_REQUEST_SESSION_TTL, GOOGLE_SPREADSHEET_USER_COLUMNS, GOOGLE_SPREADSHEET_FIRST_DATA_ROW
 
 from managers.google_spreadsheet import GoogleSpreadsheetManager
@@ -33,7 +33,8 @@ bot_manager = BotManager(
     token=TELEGRAM_BOT_TOKEN,
     karma_manager=karma_manager,
     session_manager=session_manager,
-    users_manager=users_manager
+    users_manager=users_manager,
+    chat_id=TELEGRAM_CHAT_ID
 )
 
 if __name__ == '__main__':
