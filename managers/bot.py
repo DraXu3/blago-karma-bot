@@ -21,19 +21,17 @@ class RequestType(str, Enum):
 def restrict_public_access(inherited_self=None):
     def _restrict_public_access(command):
         async def _restricted_command(*args):
-            logger.info(args)
-
             if inherited_self:
                 [self, update] = [inherited_self, args[0]]
             else:
                 [self, update, _] = args
 
             message = update.message if not update.callback_query else update.callback_query.message
-            from_chat_id = message.chat.id
+            from_chat_id = None if not message.chat else message.chat.id
             from_user = message["from"]
 
             if from_chat_id != self.chat_id:
-                logger.error(f"Received update from prohibited chat (chat_id={message.chat.id}, user={from_user})")
+                logger.error(f"Received update from prohibited chat (chat_id={from_chat_id}, user={from_user})")
 
                 reply_text = f"\uE252 _Бот не может быть использован в этом чате_"
                 await message.reply_text(text=reply_text, parse_mode=ParseMode.MARKDOWN)
