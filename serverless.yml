@@ -1,0 +1,61 @@
+service: blago-karma-bot
+
+plugins:
+  - serverless-dotenv-plugin
+
+useDotenv: true
+
+provider:
+  name: aws
+  runtime: python3.8
+  stage: dev
+  region: us-east-1
+  profile: blago_karma_bot
+  environment:
+    TELEGRAM_BOT_TOKEN: ${env:TELEGRAM_BOT_TOKEN}
+    TELEGRAM_CHAT_ID: ${env:TELEGRAM_CHAT_ID}
+    TELEGRAM_USERS: ${env:TELEGRAM_USERS}
+    GOOGLE_SPREADSHEET_ID: ${env:GOOGLE_SPREADSHEET_ID}
+    GOOGLE_SPREADSHEET_USER_COLUMNS: ${env:GOOGLE_SPREADSHEET_USER_COLUMNS}
+    GOOGLE_SPREADSHEET_FIRST_DATA_ROW: ${env:GOOGLE_SPREADSHEET_FIRST_DATA_ROW}
+    GOOGLE_API_ACCOUNT_TYPE: ${env:GOOGLE_API_ACCOUNT_TYPE}
+    GOOGLE_API_ACCOUNT_PROJECT_ID: ${env:GOOGLE_API_ACCOUNT_PROJECT_ID}
+    GOOGLE_API_ACCOUNT_PRIVATE_KEY_ID: ${env:GOOGLE_API_ACCOUNT_PRIVATE_KEY_ID}
+    GOOGLE_API_ACCOUNT_PRIVATE_KEY: ${env:GOOGLE_API_ACCOUNT_PRIVATE_KEY}
+    GOOGLE_API_ACCOUNT_CLIENT_EMAIL: ${env:GOOGLE_API_ACCOUNT_CLIENT_EMAIL}
+    GOOGLE_API_ACCOUNT_CLIENT_ID: ${env:GOOGLE_API_ACCOUNT_CLIENT_ID}
+    GOOGLE_API_ACCOUNT_AUTH_URI: ${env:GOOGLE_API_ACCOUNT_AUTH_URI}
+    GOOGLE_API_ACCOUNT_TOKEN_URI: ${env:GOOGLE_API_ACCOUNT_TOKEN_URI}
+    GOOGLE_API_ACCOUNT_AUTH_PROVIDER_X509_CERT_URL: ${env:GOOGLE_API_ACCOUNT_AUTH_PROVIDER_X509_CERT_URL}
+    GOOGLE_API_ACCOUNT_CLIENT_X509_CERT_URL: ${env:GOOGLE_API_ACCOUNT_CLIENT_X509_CERT_URL}
+    SELECT_USER_SESSION_TTL: ${env:SELECT_USER_SESSION_TTL, '60'}
+    CONFIRM_REQUEST_SESSION_TTL: ${env:CONFIRM_REQUEST_SESSION_TTL, '36000'}
+
+layers:
+  blagoKarmaBotVendor:
+    path: vendor
+    compatibleRuntimes:
+      - python3.8
+    description: "Dependencies for Blago Karma Bot"
+
+package:
+  patterns:
+    - '!__pycache__/**'
+    - '!env/**'
+    - '!vendor/**'
+    - '!venv/**'
+    - '!.env'
+    - '!responses.txt'
+    - '!*.json'
+    - '!*.zip'
+
+functions:
+  post:
+    handler: handler.hello
+    layers:
+      - !Ref BlagoKarmaBotVendorLambdaLayer
+    events:
+      - http:
+          path: hello
+          method: post
+          cors: true

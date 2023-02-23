@@ -6,7 +6,7 @@ from enum import Enum
 import asyncio
 import logging
 
-from managers.session import SessionType, SessionException
+from managers.session import SessionType
 
 
 class ConfirmOptions(str, Enum):
@@ -44,6 +44,7 @@ def restrict_public_access(inherited_self=None):
 
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 class BotManager:
     def __init__(self, token, karma_manager, session_manager, users_manager, chat_id):
@@ -78,6 +79,8 @@ class BotManager:
 
         confirm_request_callback_query_handler = CallbackQueryHandler(self.confirm_request, pattern=rf"^(?:{ConfirmOptions.CONFIRM}|{ConfirmOptions.DECLINE})$")
         self.application.add_handler(confirm_request_callback_query_handler)
+
+        logger.info('BotManager initialized')
 
     def _get_user_markup(self, user):
         user_name = user.id
@@ -442,5 +445,23 @@ class BotManager:
             reply_text="\uE333 _Запрос был отклонен_"
             await request_message.reply_text(text=reply_text, parse_mode=ParseMode.MARKDOWN)
 
+    async def process_update(self, update_json):
+        update = Update.de_json(update_json, self.application.bot)
+        logger.info(f"Started process_update: {update}")
+
+        try:
+            await self.application.initialize()
+            
+            # for handlers in self.application.handlers.values():
+            #     for handler in handlers:
+            #         check = handler.check_update(update)
+            #         logger.info(f"{handler} - {check}")
+            
+            await self.application.process_update(update)
+        except Exception as e:
+            logger.error(e)
+
+        logger.info("Finished process_update")
+
     def run(self):
-        self.application.run_polling()
+        self.application.start()

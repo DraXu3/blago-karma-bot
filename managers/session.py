@@ -19,6 +19,7 @@ class SessionTypeException(Exception):
 
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 class SessionManager:
     def __init__(self, session_ttls):

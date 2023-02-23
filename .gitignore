@@ -1,6 +1,9 @@
 *.json
+*.zip
 responses.txt
 
+__pycache__
 .env
 env
-__pycache__
+vendor
+venv
