@@ -1,0 +1,32 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      # Updating environment
+      - yum update -y
+      - python3 -m pip install --upgrade pip
+
+      # Installing awscli
+      - pip install --upgrade awscli
+
+      # Installing Serverless and required plugins
+      - npm install -g serverless serverless-dotenv-plugin
+  
+  build:
+    commands:
+      # Installing Python dependencies
+      - pip install -r requirements.txt -t vendor/python
+      
+      # AWS has its own asyncio package pre-installed
+      - rm -rf vendor/python/asyncio
+
+      # Deploying the application
+      - aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID --profile blago_karma_bot
+      - aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY --profile blago_karma_bot
+      - serverless deploy
+
+cache:
+  paths:
+    - '/root/.cache/pip/**/*'
+    - '/root/.npm/**/*'
