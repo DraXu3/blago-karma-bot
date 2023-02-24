@@ -4,7 +4,6 @@ phases:
   install:
     commands:
       # Updating environment
-      - yum update -y
       - python3 -m pip install --upgrade pip
 
       # Installing awscli
