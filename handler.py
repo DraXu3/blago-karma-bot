@@ -9,7 +9,7 @@ logger.setLevel(logging.INFO)
 
 loop = asyncio.get_event_loop()
 
-def hello(event, _):
+def webhook(event, _):
     try:
         logger.info(event)
         update = json.loads(event["body"])

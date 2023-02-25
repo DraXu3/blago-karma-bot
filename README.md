@@ -61,7 +61,7 @@ serverless deploy
 
 6. Use the following command to setup Telegram webhook for the deployed lambda function:
 ```
-curl --request POST --url https://api.telegram.org/bot<bot_token>/setWebhook --header 'content-type: application/json' --data '{"url": "<aws_lambda_url"}'
+curl --request POST --url https://api.telegram.org/bot<bot_token>/setWebhook --header 'content-type: application/json' --data '{"url": "<aws_lambda_url>"}'
 ```
 
 ## Clean up
@@ -87,4 +87,23 @@ serverless remove
 
 ## Environment variables
 
-TBD
+| Name | Description | Default value |
+| --- | --- | --- | --- |
+| `TELEGRAM_BOT_TOKEN` | Telegram bot token | |
+| `TELEGRAM_CHAT_ID` | Id of the chat where bot will be used | |
+| `TELEGRAM_USERS` | Dictionary which maps user id with its name | |
+| `GOOGLE_SPREADSHEET_ID` | Id of the spreadsheet which stores Karma data | |
+| `GOOGLE_SPREADSHEET_USER_COLUMNS` | Dictionary which maps user id with a list of columns in the spreadsheet | |
+| `GOOGLE_SPREADSHEET_FIRST_DATA_ROW` | Number of first row of the data in the spreadsheet | |
+| `GOOGLE_API_ACCOUNT_TYPE` | Type of Google account | |
+| `GOOGLE_API_ACCOUNT_PROJECT_ID` | Id of Google project | |
+| `GOOGLE_API_ACCOUNT_PRIVATE_KEY_ID` | Private key id | |
+| `GOOGLE_API_ACCOUNT_PRIVATE_KEY` | Private key | |
+| `GOOGLE_API_ACCOUNT_CLIENT_EMAIL` | Client email | |
+| `GOOGLE_API_ACCOUNT_CLIENT_ID` | Client id | |
+| `GOOGLE_API_ACCOUNT_AUTH_URI` | URI to be used for authentication | |
+| `GOOGLE_API_ACCOUNT_TOKEN_URI` | URI for the token | |
+| `GOOGLE_API_ACCOUNT_AUTH_PROVIDER_X509_CERT_URL` | Auth provider X509 certificate URL | |
+| `GOOGLE_API_ACCOUNT_CLIENT_X509_CERT_URL` | Client X509 certificate URL | |
+| `SELECT_USER_SESSION_TTL` | Timeout for selecting the member in request | `60` |
+| `CONFIRM_REQUEST_SESSION_TTL` | Timeout for confirming the request | `36000` |

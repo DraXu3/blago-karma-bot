@@ -51,11 +51,11 @@ package:
 
 functions:
   post:
-    handler: handler.hello
+    handler: handler.webhook
     layers:
       - !Ref BlagoKarmaBotVendorLambdaLayer
     events:
       - http:
-          path: hello
+          path: webhook
           method: post
           cors: true
