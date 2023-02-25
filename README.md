@@ -88,7 +88,7 @@ serverless remove
 ## Environment variables
 
 | Name | Description | Default value |
-| --- | --- | --- | --- |
+| --- | --- | --- |
 | `TELEGRAM_BOT_TOKEN` | Telegram bot token | |
 | `TELEGRAM_CHAT_ID` | Id of the chat where bot will be used | |
 | `TELEGRAM_USERS` | Dictionary which maps user id with its name | |
