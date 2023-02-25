@@ -4,6 +4,7 @@ responses.txt
 
 __pycache__
 .env
+.serverless
 env
 vendor
 venv
