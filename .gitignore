@@ -3,8 +3,10 @@
 responses.txt
 
 __pycache__
+.DS_Store
 .env
 .serverless
 env
 vendor
 venv
+node_modules/
