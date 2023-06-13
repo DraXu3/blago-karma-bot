@@ -21,7 +21,7 @@ class SessionTypeException(Exception):
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-class SessionManager:
+class SessionService:
     def __init__(self, session_ttls):
         self.storage = {}
         self.users_sessions = {}

@@ -3,18 +3,18 @@
 ## Description
 
 BLAGO 🙏🏻 is a Telegram bot which manages people's karma. Karma is essentially just a number of points assigned to a user. It could be either increased or decreased for whatever reason.
-Thus, the bot acts as an arbitrator within a group of people providing ability for such groups to manage their own ecosystem of karma. Which overall leads to an ultimate BLAGO 🙏🏻
+Thus, the bot acts as an arbitrator within a group of participants providing ability for such groups to manage their own ecosystem of karma. Which overall leads to an ultimate BLAGO 🙏🏻
 
 ## Bot commands
 
 * `/help` - displays all available commands with their description
-* `/up [reason]` - request +1 KS (Karma score) for a member (an optional reason could be set)
-* `/down [reason]` - request -1 KS for a member (an optional reason could be set)
-* `/show [user_mention]` - show a list of all memebers with their KS (or only for mentioned member)
+* `/up [reason]` - requests +1 KP (Karma Point) for a member (an optional reason could be set)
+* `/down [reason]` - requests -1 KP for a member (an optional reason could be set)
+* `/show [user_mention]` - shows a list of all memebers with their KP (or only for mentioned member)
 
 ## Install
 
-1. Create your instance of Telegram bot using [@BotFather](https://telegram.me/BotFather) and obtain bot token. For example, follow the instructions [here](https://core.telegram.org/bots#how-do-i-create-a-bot)
+1. Create your instance of Telegram bot using [@BotFather](https://telegram.me/BotFather) and obtain the bot token. For example, follow the instructions [here](https://core.telegram.org/bots#how-do-i-create-a-bot)
 
 2. Install Python 3 dependencies:
 ```
@@ -79,7 +79,7 @@ serverless remove
 ## Voting rules
 
 * Requestor cannot send Karma changing request for himself/herself 
-* In order to successfully change person's KS, the request should be confirmed by a third member
+* In order to successfully change person's KP, the request should be confirmed by a third member
 * Requestor cannot confirm the request, but can reject it
 * Requested person cannot neither confirm nor reject the request
 * After the timeout (*1 minute* by default) it becomes impossible to select a memeber for the request
@@ -107,3 +107,11 @@ serverless remove
 | `GOOGLE_API_ACCOUNT_CLIENT_X509_CERT_URL` | Client X509 certificate URL | |
 | `SELECT_USER_SESSION_TTL` | Timeout for selecting the member in request | `60` |
 | `CONFIRM_REQUEST_SESSION_TTL` | Timeout for confirming the request | `36000` |
+
+## Roadmap
+
+1. Migrate from Google Spreadsheet storage to AWS DynamoDB
+2. Consider migration to [`aiogram`](https://mastergroosha.github.io/aiogram-3-guide/)
+3. Add localization and managed settings for the bot
+2. Add Poetry for dependency management
+4. Add tests and linters :D

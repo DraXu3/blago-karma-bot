@@ -6,7 +6,7 @@ from enum import Enum
 import asyncio
 import logging
 
-from managers.session import SessionType
+from services.session import SessionType
 
 
 class ConfirmOptions(str, Enum):
@@ -46,12 +46,12 @@ def restrict_public_access(inherited_self=None):
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-class BotManager:
-    def __init__(self, token, karma_manager, session_manager, users_manager, chat_id):
+class BotService:
+    def __init__(self, token, karma_service, session_service, users_service, chat_id):
         self.application = ApplicationBuilder().token(token).build()
-        self.karma_manager = karma_manager
-        self.session_manager = session_manager
-        self.users_manager = users_manager
+        self.karma_service = karma_service
+        self.session_service = session_service
+        self.users_service = users_service
         self.chat_id = chat_id
 
         self.confirm_request_reply_markup = self._build_reply_markup({
@@ -80,7 +80,7 @@ class BotManager:
         confirm_request_callback_query_handler = CallbackQueryHandler(self.confirm_request, pattern=rf"^(?:{ConfirmOptions.CONFIRM}|{ConfirmOptions.DECLINE})$")
         self.application.add_handler(confirm_request_callback_query_handler)
 
-        logger.info('BotManager initialized')
+        logger.info('BotService initialized')
 
     def _get_user_markup(self, user):
         user_name = user.id
@@ -147,7 +147,7 @@ class BotManager:
             request_message = update.message
             requesting_user = update.message['from']
 
-            if self.session_manager.user_has_session(requesting_user.id, filter_by_type=SessionType.SELECT_USER):
+            if self.session_service.user_has_session(requesting_user.id, filter_by_type=SessionType.SELECT_USER):
                 logger.error(f"User already has an active session (user_id={requesting_user.id}, session_type=SessionType.SELECT_USER)")
 
                 reply_text = f"\uE252 _Активная сессия выбора участника уже была инициирована_"
@@ -155,7 +155,7 @@ class BotManager:
                 return
 
             reply_text = f"\U0001F464 Выберите участника:"
-            reply_markup = self._build_reply_markup(self.users_manager.get_all_users(except_user=requesting_user.id))
+            reply_markup = self._build_reply_markup(self.users_service.get_all_users(except_user=requesting_user.id))
             select_user_message = await request_message.reply_text(text=reply_text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
 
             logger.info(f"Select user message was sent (message_id={select_user_message.message_id})")
@@ -169,7 +169,7 @@ class BotManager:
                     "reason": reason
                 }
 
-                session_id = self.session_manager.create_session(
+                session_id = self.session_service.create_session(
                     id=select_user_message.message_id,
                     type=SessionType.SELECT_USER,
                     user=requesting_user,
@@ -214,7 +214,7 @@ class BotManager:
             logger.info(f"Found mentioned user. Getting total value for the user: {mentioned_user}")
 
             try:
-                total = self.karma_manager.get_total_value(mentioned_user.id)
+                total = self.karma_service.get_total_value(mentioned_user.id)
             except Exception as err:
                 logger.error(f"Error getting total value for the user (user_id={mentioned_user.id}): {err}")
 
@@ -231,7 +231,7 @@ class BotManager:
             logger.info(f"No mentioned user found. Getting total values for all users")
 
             try:
-                total = self.karma_manager.get_total_values()
+                total = self.karma_service.get_total_values()
                 total = sorted(list(total.items()), key=lambda item: item[1], reverse=True)
             except Exception as err:
                 logger.error(f"Error getting total values for all users: {err}")
@@ -250,7 +250,7 @@ class BotManager:
                 if users[index]:
                     user = self._get_user_markup(users[index])
                 else:
-                    user = self.users_manager.get_user_name(user_id)
+                    user = self.users_service.get_user_name(user_id)
                 reply_text += f"  {index + 1}. {user}: *{amount} OK*\n"           
             await update.message.reply_text(text=reply_text, parse_mode=ParseMode.MARKDOWN)
 
@@ -266,7 +266,7 @@ class BotManager:
         select_user_message = update.callback_query.message
 
         try:
-            select_user_session = self.session_manager.get_session(select_user_message.message_id)
+            select_user_session = self.session_service.get_session(select_user_message.message_id)
         except Exception as err:
             logger.error(f"Error getting session (session_id={select_user_message.message_id}): {err}")
             logger.warning(f"Select user message will be deleted (message_id={select_user_message.message_id})")
@@ -282,12 +282,12 @@ class BotManager:
         request_type = select_user_session["data"]["request_type"]
         reason = select_user_session["data"]["reason"]
         
-        if self.session_manager.session_is_expired(select_user_session):
+        if self.session_service.session_is_expired(select_user_session):
             logger.warning(f"Session is expired (session_id={select_user_session['id']}, session_type=SessionType.SELECT_USER)")
             logger.warning(f"Session will be deleted (session_id={select_user_session['id']}, session_type=SessionType.SELECT_USER)")
             logger.warning(f"Select user message will be deleted (message_id={select_user_message.message_id})")
 
-            self.session_manager.delete_session(select_user_session["id"])            
+            self.session_service.delete_session(select_user_session["id"])            
             await select_user_message.delete()
 
             reply_text=f"\uE252 _Запрос более не актуален_"
@@ -306,14 +306,14 @@ class BotManager:
             await request_message.reply_text(text=reply_text, parse_mode=ParseMode.MARKDOWN)
             return
 
-        self.session_manager.delete_session(select_user_session["id"])
+        self.session_service.delete_session(select_user_session["id"])
         await select_user_message.delete()
 
         logger.info(f"Session was deleted (session_id={select_user_session['id']}, session_type=SessionType.SELECT_USER)")
         logger.info(f"Select user message was deleted (message_id={select_user_message.message_id})")
 
         ok_amount_text = "+1" if request_type == RequestType.UP else "-1"
-        selected_user_name = self.users_manager.get_user_name(selected_user_id)
+        selected_user_name = self.users_service.get_user_name(selected_user_id)
         reply_text = f"\U0001F4AC Участник {self._get_user_markup(selecting_user)} запрашивает *{ok_amount_text} ОК* участнику *{selected_user_name}* по причине: _\"{reason}\"_"
         confirm_request_message = await request_message.reply_text(text=reply_text, reply_markup=self.confirm_request_reply_markup, parse_mode=ParseMode.MARKDOWN)
 
@@ -329,7 +329,7 @@ class BotManager:
                 "confirm_request_message": confirm_request_message
             }
 
-            confirm_request_session_id = self.session_manager.create_session(
+            confirm_request_session_id = self.session_service.create_session(
                 id=confirm_request_message.message_id,
                 type=SessionType.CONFIRM_REQUEST,
                 user=selecting_user,
@@ -354,7 +354,7 @@ class BotManager:
         confirm_request_message = update.callback_query.message
 
         try:
-            confirm_request_session = self.session_manager.get_session(confirm_request_message.message_id)
+            confirm_request_session = self.session_service.get_session(confirm_request_message.message_id)
         except Exception as err:
             logger.error(f"Error getting session (session_id={confirm_request_message.message_id}): {err}")
             logger.warning(f"Confirm request message will be deleted: {confirm_request_message}")
@@ -371,12 +371,12 @@ class BotManager:
         requesting_user = confirm_request_session["data"]["requesting_user"]
         selected_user_id = confirm_request_session["data"]["selected_user_id"]
         
-        if self.session_manager.session_is_expired(confirm_request_session):
+        if self.session_service.session_is_expired(confirm_request_session):
             logger.warning(f"Session is expired (session_id={confirm_request_session['id']}, session_type=SessionType.CONFIRM_REQUEST)")
             logger.warning(f"Session will be deleted (session_id={confirm_request_session['id']}, session_type=SessionType.CONFIRM_REQUEST)")
             logger.warning(f"Confirm request message will be deleted: {confirm_request_message}")
 
-            self.session_manager.delete_session(confirm_request_session["id"])            
+            self.session_service.delete_session(confirm_request_session["id"])            
             await confirm_request_message.delete()
 
             reply_text=f"\uE252 _Запрос более не актуален_"
@@ -409,7 +409,7 @@ class BotManager:
             await confirm_request_message.reply_text(text=reply_text, parse_mode=ParseMode.MARKDOWN)
             return
 
-        self.session_manager.delete_session(confirm_request_session["id"])
+        self.session_service.delete_session(confirm_request_session["id"])
         await confirm_request_message.delete()
 
         logger.info(f"Session was deleted (session_id={confirm_request_session['id']}, session_type=SessionType.CONFIRM_REQUEST)")
@@ -420,9 +420,9 @@ class BotManager:
 
             try:
                 if request_type == RequestType.UP:
-                    self.karma_manager.up(selected_user_id, reason)
+                    self.karma_service.up(selected_user_id, reason)
                 else:
-                    self.karma_manager.down(selected_user_id, reason)
+                    self.karma_service.down(selected_user_id, reason)
             except Exception as err:
                 logger.error(f"Error updating karma for user (user_id={selected_user_id}, reason={reason}): {err}")
 
@@ -432,7 +432,7 @@ class BotManager:
 
             ok_amount_text = '+1' if request_type == RequestType.UP else '-1'
             emoji_text = '\uE232' if request_type == RequestType.UP else '\uE233'
-            selected_user_name = self.users_manager.get_user_name(selected_user_id)
+            selected_user_name = self.users_service.get_user_name(selected_user_id)
 
             reply_text = f"{emoji_text} Участник *{selected_user_name}* получает *{ok_amount_text} OK* по причине: _\"{reason}\"_"
             await request_message.reply_text(text=reply_text, parse_mode=ParseMode.MARKDOWN)
@@ -451,12 +451,6 @@ class BotManager:
 
         try:
             await self.application.initialize()
-            
-            # for handlers in self.application.handlers.values():
-            #     for handler in handlers:
-            #         check = handler.check_update(update)
-            #         logger.info(f"{handler} - {check}")
-            
             await self.application.process_update(update)
         except Exception as e:
             logger.error(e)

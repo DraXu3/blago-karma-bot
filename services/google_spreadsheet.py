@@ -1,6 +1,6 @@
 import gspread
 
-class GoogleSpreadsheetManager:
+class GoogleSpreadsheetService:
     def __init__(
         self, 
         account_dict, 

@@ -14,8 +14,8 @@ def webhook(event, _):
         logger.info(event)
         update = json.loads(event["body"])
 
-        bot_manager = init()
-        loop.run_until_complete(bot_manager.process_update(update))
+        bot_service = init()
+        loop.run_until_complete(bot_service.process_update(update))
 
         return { "statusCode": 200 }
                 

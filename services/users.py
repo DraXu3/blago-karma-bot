@@ -2,7 +2,7 @@ class UserException(Exception):
     pass
 
 
-class UsersManager:
+class UsersService:
     def __init__(self, users):
         self.users = users
     
